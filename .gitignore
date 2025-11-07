@@ -72,3 +72,7 @@ timepng
 
 # Libpng CI artifacts
 out/
+
+# Coverage 
+*.gcno
+*.gcda
