@@ -1084,8 +1084,8 @@ png_colorspace_check_gamma(png_const_structrp png_ptr,
 {
    png_fixed_point gtest;
 
-   if ((colorspace->flags & PNG_COLORSPACE_HAVE_GAMMA) != 0 &&
-       (png_muldiv(&gtest, colorspace->gamma, PNG_FP_1, gAMA) == 0  ||
+   if ((colorspace->flags & PNG_COLORSPACE_HAVE_GAMMA) != 0 && // dpd:0:span,lad,stdev,rtc | dpd:2:span,lad,stdev,rtc | dpd:3:lad,stdev
+       (png_muldiv(&gtest, colorspace->gamma, PNG_FP_1, gAMA) == 0  || // dpd:0:span,lad,stdev
       png_gamma_significant(gtest) != 0))
    {
       /* Either this is an sRGB image, in which case the calculated gamma
@@ -1094,7 +1094,7 @@ png_colorspace_check_gamma(png_const_structrp png_ptr,
        * value recorded in the file.  The former, sRGB, case is an error, the
        * latter is just a warning.
        */
-      if ((colorspace->flags & PNG_COLORSPACE_FROM_sRGB) != 0 || from == 2)
+      if ((colorspace->flags & PNG_COLORSPACE_FROM_sRGB) != 0 || from == 2) // dpd:0:span,lad,stdev | dpd:1:span,lad,stdev | dpd:2:span,lad,stdev
       {
          png_chunk_report(png_ptr, "gamma value does not match sRGB",
              PNG_CHUNK_ERROR);
@@ -1146,7 +1146,7 @@ png_colorspace_set_gamma(png_const_structrp png_ptr,
 
    else
    {
-      if (png_colorspace_check_gamma(png_ptr, colorspace, gAMA,
+      if (png_colorspace_check_gamma(png_ptr, colorspace, gAMA, // dpd:1:span,lad,stdev,rtc
           1/*from gAMA*/) != 0)
       {
          /* Store this gamma value. */
@@ -1683,7 +1683,7 @@ png_colorspace_set_xy_and_XYZ(png_const_structrp png_ptr,
     * variations because of the normalization (or not) of the end point Y
     * values.
     */
-   if (preferred < 2 &&
+   if (preferred < 2 && // dpd:2:rtc
        (colorspace->flags & PNG_COLORSPACE_HAVE_ENDPOINTS) != 0)
    {
       /* The end points must be reasonably close to any we already have.  The
@@ -1926,7 +1926,7 @@ png_colorspace_set_sRGB(png_const_structrp png_ptr, png_colorspacerp colorspace,
    /* If the standard sRGB cHRM chunk does not match the one from the PNG file
     * warn but overwrite the value with the correct one.
     */
-   if ((colorspace->flags & PNG_COLORSPACE_HAVE_ENDPOINTS) != 0 &&
+   if ((colorspace->flags & PNG_COLORSPACE_HAVE_ENDPOINTS) != 0 && // dpd:0:span,lad,stdev,rtc | dpd:2:span,lad,stdev,rtc
        !png_colorspace_endpoints_match(&sRGB_xy, &colorspace->end_points_xy,
        100))
       png_chunk_report(png_ptr, "cHRM chunk does not match sRGB",
@@ -2080,7 +2080,7 @@ png_icc_check_header(png_const_structrp png_ptr, png_colorspacerp colorspace,
     * the introduction for using a fixed PCS adopted white.)  Consequently the
     * following is just a warning.
     */
-   if (memcmp(profile+68, D50_nCIEXYZ, 12) != 0)
+   if (memcmp(profile+68, D50_nCIEXYZ, 12) != 0) // dpd:0:span,rtc
       (void)png_icc_profile_error(png_ptr, NULL, name, 0/*no tag value*/,
           "PCS illuminant is not D50");
 
@@ -2105,10 +2105,10 @@ png_icc_check_header(png_const_structrp png_ptr, png_colorspacerp colorspace,
     * almost certainly more correct to ignore the profile.
     */
    temp = png_get_uint_32(profile+16); /* data colour space field */
-   switch (temp)
+   switch (temp) // dpd:2:span,rtc
    {
       case 0x52474220: /* 'RGB ' */
-         if ((color_type & PNG_COLOR_MASK_COLOR) == 0)
+         if ((color_type & PNG_COLOR_MASK_COLOR) == 0) // dpd:0:span,rtc
             return png_icc_profile_error(png_ptr, colorspace, name, temp,
                 "RGB color space not permitted on grayscale PNG");
          break;
@@ -2134,7 +2134,7 @@ png_icc_check_header(png_const_structrp png_ptr, png_colorspacerp colorspace,
     * Profiles of these classes may not be embedded in images.
     */
    temp = png_get_uint_32(profile+12); /* profile/device class */
-   switch (temp)
+   switch (temp) // dpd:7:span,rtc
    {
       case 0x73636e72: /* 'scnr' */
       case 0x6d6e7472: /* 'mntr' */
@@ -2182,7 +2182,7 @@ png_icc_check_header(png_const_structrp png_ptr, png_colorspacerp colorspace,
     * either in XYZ or Lab.
     */
    temp = png_get_uint_32(profile+20);
-   switch (temp)
+   switch (temp) // dpd:2:span,rtc
    {
       case 0x58595a20: /* 'XYZ ' */
       case 0x4c616220: /* 'Lab ' */
@@ -2224,11 +2224,11 @@ png_icc_check_tag_table(png_const_structrp png_ptr, png_colorspacerp colorspace,
       /* This is a hard error; potentially it can cause read outside the
        * profile.
        */
-      if (tag_start > profile_length || tag_length > profile_length - tag_start)
+      if (tag_start > profile_length || tag_length > profile_length - tag_start) // dpd:1:span,rtc | dpd:2:span,rtc
          return png_icc_profile_error(png_ptr, colorspace, name, tag_id,
              "ICC profile tag outside profile");
 
-      if ((tag_start & 3) != 0)
+      if ((tag_start & 3) != 0) // dpd:0:span,rtc
       {
          /* CNHP730S.icc shipped with Microsoft Windows 64 violates this; it is
           * only a warning here because libpng does not care about the
@@ -2334,9 +2334,9 @@ png_compare_ICC_profile_with_sRGB(png_const_structrp png_ptr,
 
    for (i=0; i < (sizeof png_sRGB_checks) / (sizeof png_sRGB_checks[0]); ++i)
    {
-      if (png_get_uint_32(profile+84) == png_sRGB_checks[i].md5[0] &&
-         png_get_uint_32(profile+88) == png_sRGB_checks[i].md5[1] &&
-         png_get_uint_32(profile+92) == png_sRGB_checks[i].md5[2] &&
+      if (png_get_uint_32(profile+84) == png_sRGB_checks[i].md5[0] && // dpd:3:span,rtc
+         png_get_uint_32(profile+88) == png_sRGB_checks[i].md5[1] &&  // dpd:1:span,rtc
+         png_get_uint_32(profile+92) == png_sRGB_checks[i].md5[2] &&  // dpd:1:span,rtc
          png_get_uint_32(profile+96) == png_sRGB_checks[i].md5[3])
       {
          /* This may be one of the old HP profiles without an MD5, in that
