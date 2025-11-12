@@ -4226,7 +4226,7 @@ png_do_expand_palette(png_structrp png_ptr, png_row_infop row_info,
    {
       if (row_info->bit_depth < 8)
       {
-         switch (row_info->bit_depth)
+         switch (row_info->bit_depth) // dpd:0:rtc | dpd:1:rtc
          {
             case 1:
             {
@@ -4542,19 +4542,19 @@ png_do_expand(png_row_infop row_info, png_bytep row,
              row_width);
       }
    }
-   else if (row_info->color_type == PNG_COLOR_TYPE_RGB &&
+   else if (row_info->color_type == PNG_COLOR_TYPE_RGB && // dpd:2:stdev,rtc
        trans_color != NULL)
    {
-      if (row_info->bit_depth == 8)
+      if (row_info->bit_depth == 8) // dpd:0:stdev | dpd:1:lad,stdev
       {
          png_byte red = (png_byte)(trans_color->red & 0xff);
          png_byte green = (png_byte)(trans_color->green & 0xff);
          png_byte blue = (png_byte)(trans_color->blue & 0xff);
          sp = row + (size_t)row_info->rowbytes - 1;
          dp = row + ((size_t)row_width << 2) - 1;
-         for (i = 0; i < row_width; i++)
+         for (i = 0; i < row_width; i++) // dpd:0:stdev | dpd:1:stdev
          {
-            if (*(sp - 2) == red && *(sp - 1) == green && *(sp) == blue)
+            if (*(sp - 2) == red && *(sp - 1) == green && *(sp) == blue) // dpd:0,1,2,3,4,5:stdev
                *dp-- = 0;
 
             else
@@ -4565,7 +4565,7 @@ png_do_expand(png_row_infop row_info, png_bytep row,
             *dp-- = *sp--;
          }
       }
-      else if (row_info->bit_depth == 16)
+      else if (row_info->bit_depth == 16) // dpd:0:lad,stdev
       {
          png_byte red_high = (png_byte)((trans_color->red >> 8) & 0xff);
          png_byte green_high = (png_byte)((trans_color->green >> 8) & 0xff);
@@ -4575,13 +4575,13 @@ png_do_expand(png_row_infop row_info, png_bytep row,
          png_byte blue_low = (png_byte)(trans_color->blue & 0xff);
          sp = row + row_info->rowbytes - 1;
          dp = row + ((size_t)row_width << 3) - 1;
-         for (i = 0; i < row_width; i++)
+         for (i = 0; i < row_width; i++) // dpd:0:lad,stdev | dpd:1:lad,stdev
          {
-            if (*(sp - 5) == red_high &&
-                *(sp - 4) == red_low &&
-                *(sp - 3) == green_high &&
-                *(sp - 2) == green_low &&
-                *(sp - 1) == blue_high &&
+            if (*(sp - 5) == red_high && // dpd:0:lad,stdev | dpd:1,2,3:lad
+                *(sp - 4) == red_low &&  // dpd:0,1:lad
+                *(sp - 3) == green_high && // dpd:0,1:lad
+                *(sp - 2) == green_low & // dpd:0:lad,stdev | dpd:1:lad
+                *(sp - 1) == blue_high && // dpd:0:lad | dpd:1:lad,stdev
                 *(sp    ) == blue_low)
             {
                *dp-- = 0;
@@ -4605,7 +4605,7 @@ png_do_expand(png_row_infop row_info, png_bytep row,
       row_info->color_type = PNG_COLOR_TYPE_RGB_ALPHA;
       row_info->channels = 4;
       row_info->pixel_depth = (png_byte)(row_info->bit_depth << 2);
-      row_info->rowbytes = PNG_ROWBYTES(row_info->pixel_depth, row_width);
+      row_info->rowbytes = PNG_ROWBYTES(row_info->pixel_depth, row_width); // dpd:0:stdev
    }
 }
 #endif
