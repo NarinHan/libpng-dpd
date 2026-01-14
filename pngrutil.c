@@ -1074,7 +1074,7 @@ png_handle_PLTE(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
     * maintainers to ignore it.
     */
 #ifdef PNG_READ_tRNS_SUPPORTED
-   if (png_ptr->num_trans > 0 || // dpd:1:lad
+   if (png_ptr->num_trans > 0 || // dpd:1:rtc
        (info_ptr != NULL && (info_ptr->valid & PNG_INFO_tRNS) != 0))
    {
       /* Cancel this because otherwise it would be used if the transforms
@@ -1083,7 +1083,7 @@ png_handle_PLTE(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
        */
       png_ptr->num_trans = 0;
 
-      if (info_ptr != NULL) // dpd:0:lad
+      if (info_ptr != NULL) 
          info_ptr->num_trans = 0;
 
       png_chunk_benign_error(png_ptr, "tRNS must be after");
@@ -1096,7 +1096,7 @@ png_handle_PLTE(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
 #endif
 
 #ifdef PNG_READ_bKGD_SUPPORTED
-   if (info_ptr != NULL && (info_ptr->valid & PNG_INFO_bKGD) != 0) // dpd:2:span
+   if (info_ptr != NULL && (info_ptr->valid & PNG_INFO_bKGD) != 0) 
       png_chunk_benign_error(png_ptr, "bKGD must be after");
 #endif
 }
@@ -1219,7 +1219,7 @@ png_handle_sBIT(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
       }
    }
 
-   if ((png_ptr->color_type & PNG_COLOR_MASK_COLOR) != 0) // dpd:0:lad
+   if ((png_ptr->color_type & PNG_COLOR_MASK_COLOR) != 0) 
    {
       png_ptr->sig_bit.red = buf[0];
       png_ptr->sig_bit.green = buf[1];
@@ -1502,9 +1502,9 @@ png_handle_iCCP(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
                            /* Still expect a buffer error because we expect
                             * there to be some tag data!
                             */
-                           if (size == 0) // dpd:1:span,rtc
+                           if (size == 0) 
                            {
-                              if (png_icc_check_tag_table(png_ptr, // dpd:1:span,rtc
+                              if (png_icc_check_tag_table(png_ptr, 
                                   &png_ptr->colorspace, keyword, profile_length,
                                   profile) != 0)
                               {
@@ -1519,14 +1519,14 @@ png_handle_iCCP(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
                                      profile + (sizeof profile_header) +
                                      12 * tag_count, &size, 1/*finish*/);
 
-                                 if (length > 0 && !(png_ptr->flags & // dpd:0:span,rtc | dpd:3:span,rtc
+                                 if (length > 0 && !(png_ptr->flags & // dpd:0,3:rtc
                                      PNG_FLAG_BENIGN_ERRORS_WARN))
                                     errmsg = "extra compressed data";
 
                                  /* But otherwise allow extra data: */
-                                 else if (size == 0) // dpd:1:span,rtc
+                                 else if (size == 0)  
                                  {
-                                    if (length > 0) // dpd:0:span,rtc
+                                    if (length > 0) // dpd:0:rtc
                                     {
                                        /* This can be handled completely, so
                                         * keep going.
@@ -1588,7 +1588,7 @@ png_handle_iCCP(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
                                        return;
                                     }
                                  }
-                                 if (errmsg == NULL) // dpd:0:span
+                                 if (errmsg == NULL) 
                                     errmsg = png_ptr->zstream.msg;
                               }
                               /* else png_icc_check_tag_table output an error */
@@ -1980,7 +1980,7 @@ png_handle_bKGD(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
    {
       background.index = buf[0];
 
-      if (info_ptr != NULL && info_ptr->num_palette != 0) // dpd:3:stdev
+      if (info_ptr != NULL && info_ptr->num_palette != 0) // dpd:3:rtc
       {
          if (buf[0] >= info_ptr->num_palette)
          {
@@ -2084,7 +2084,7 @@ png_handle_eXIf(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
       png_crc_read(png_ptr, buf, 1);
       info_ptr->eXIf_buf[i] = buf[0];
       if (i == 1 && buf[0] != 'M' && buf[0] != 'I'
-                 && info_ptr->eXIf_buf[0] != buf[0]) // dpd:1:rtc
+                 && info_ptr->eXIf_buf[0] != buf[0]) 
       {
          png_crc_finish(png_ptr, length-i-1);
          png_chunk_benign_error(png_ptr, "incorrect byte-order specifier");
@@ -2122,7 +2122,7 @@ png_handle_hIST(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
       return;
    }
 
-   else if (info_ptr != NULL && (info_ptr->valid & PNG_INFO_hIST) != 0) // dpd:2:span,rtc
+   else if (info_ptr != NULL && (info_ptr->valid & PNG_INFO_hIST) != 0) // dpd:2:rtc
    {
       png_crc_finish(png_ptr, length);
       png_chunk_benign_error(png_ptr, "duplicate");
@@ -2139,7 +2139,7 @@ png_handle_hIST(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
       return;
    }
 
-   for (i = 0; i < num; i++)
+   for (i = 0; i < num; i++) // dpd:0:rtc
    {
       png_byte buf[2];
 
@@ -2674,7 +2674,7 @@ png_handle_zTXt(png_structrp png_ptr, png_inforp info_ptr, png_uint_32 length)
        * level memory limit, this should be split to different values for iCCP
        * and text chunks.
        */
-      if (png_decompress_chunk(png_ptr, length, keyword_length+2, // dpd:0:lad
+      if (png_decompress_chunk(png_ptr, length, keyword_length+2, 
           &uncompressed_length, 1/*terminate*/) == Z_STREAM_END)
       {
          png_text text;

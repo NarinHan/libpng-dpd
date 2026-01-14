@@ -217,7 +217,7 @@ png_set_hIST(png_const_structrp png_ptr, png_inforp info_ptr,
    if (png_ptr == NULL || info_ptr == NULL)
       return;
 
-   if (info_ptr->num_palette == 0 || info_ptr->num_palette
+   if (info_ptr->num_palette == 0 || info_ptr->num_palette // dpd:0,3:rtc
        > PNG_MAX_PALETTE_LENGTH)
    {
       png_warning(png_ptr,
